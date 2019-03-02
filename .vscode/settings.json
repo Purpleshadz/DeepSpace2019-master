@@ -1,0 +1,18 @@
+{
+  "java.configuration.updateBuildConfiguration": "disabled",
+  "java.import.gradle.enabled": false,
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "bin/": true,
+    ".classpath": true,
+    ".project": true
+  },
+  "github.remoteName": "https://github.com/FRC2240/DeepSpace2019.git",
+  "files.associations": {
+    "*.inc": "cpp"
+  }
+}
