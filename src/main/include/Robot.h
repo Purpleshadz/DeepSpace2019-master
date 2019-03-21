@@ -76,6 +76,9 @@ class Robot : public frc::TimedRobot {
   // Joystick
   frc::Joystick m_stick{0};
 
+  // POV Buttons
+  // frc::POVButton::POVButton m_POV{0};
+
   // Encoders
   rev::CANEncoder m_armEncoder       = m_ArmMotor.GetEncoder();
   rev::CANEncoder m_wristEncoder     = m_wristMotor.GetEncoder();
@@ -106,16 +109,23 @@ class Robot : public frc::TimedRobot {
   pidCoeff  m_climbArmCoeff {0.05, 0.0, 0.0, 0.0, 0.0, -1.0, 1.0};
 
   // Set Points for arm/wrist positions
-  double m_armRotations[4]    {0.0, 20.0, 49.0, 99.0};
-  double m_wristRotations[4]  {0.0, 23.5, 40.0, 9.0};
+  double m_armRotations[4]    {0.0, 17.5, 46.5, 94.5};
+  double m_wristRotations[4]  {0.0, 32.5, 48.0, 14.0};
   //double m_climbFootRotations = 0.0;
   double m_climbFootRotations = 132.0;
   //double m_climbArmRotations  = 0.0;
   double m_climbArmRotations  = 74.0;
+
+  double m_climbWristRotationlvl1 = 31.0;
+
+  double m_climbArmRotationsLowLevel  = 85.0;
   // Drive to get Robot on level
-  double m_RobotDriveVelocity = .25;
+  double m_RobotDriveVelocity = .5;
   // Timer
   int timer = 0;
+  int timerArm = 0;
+  int timerArmDrive = 0;
+  int timerFootBall = 0;
   int failSafe = 0;
   // Toggle for climb
   int climbToggle = 0;

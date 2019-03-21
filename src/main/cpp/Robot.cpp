@@ -57,6 +57,9 @@ void Robot::RobotPeriodic() {}
  */
 void Robot::AutonomousInit() {
   ReadDashboard();
+  m_armPidController.SetReference(m_armRotations[0], rev::ControlType::kPosition);
+  m_wristPidController.SetReference(m_wristRotations[0], rev::ControlType::kPosition);
+  m_climbArmPidController.SetReference(0, rev::ControlType::kPosition);
 }
 
 void Robot::AutonomousPeriodic() {
@@ -65,8 +68,6 @@ void Robot::AutonomousPeriodic() {
 
 void Robot::TeleopInit() {
   ReadDashboard();
-  m_armPidController.SetReference(m_armRotations[0], rev::ControlType::kPosition);
-  m_wristPidController.SetReference(m_wristRotations[0], rev::ControlType::kPosition);
 }
 
 void Robot::TeleopPeriodic() {
@@ -120,21 +121,21 @@ void Robot::OperatorControl()
 
   // Shifting
   if (m_stick.GetRawButton(5)) {
-    LOGGER(INFO) << "High Gear";
+  //  LOGGER(INFO) << "High Gear";
 		m_gearbox_right.Set(frc::DoubleSolenoid::Value::kForward);
     m_gearbox_left.Set(frc::DoubleSolenoid::Value::kForward);
   } else if (m_stick.GetRawButton(6)) {
-    LOGGER(INFO) << "Low Gear";
+  //  LOGGER(INFO) << "Low Gear";
 		m_gearbox_right.Set(frc::DoubleSolenoid::Value::kReverse);
 		m_gearbox_left.Set(frc::DoubleSolenoid::Value::kReverse);
 	}
 
  // Grabber
  if (m_stick.GetRawButton(7)) {
-    LOGGER(INFO) << "Grabber Open";
+  //  LOGGER(INFO) << "Grabber Open";
 		m_grabber.Set(frc::DoubleSolenoid::Value::kForward);
   } else if (m_stick.GetRawButton(8)) {
-    LOGGER(INFO) << "Grabber Close";
+  //  LOGGER(INFO) << "Grabber Close";
 		m_grabber.Set(frc::DoubleSolenoid::Value::kReverse);
 	} 
 
@@ -144,7 +145,7 @@ if (m_stick.GetRawAxis(2) > 0.5){
 else{
   failSafe = 0;
 }
-if(failSafe >= 100){
+if(failSafe >= 50){    
   if(m_stick.GetRawAxis(2) > 0.5 && (m_climbFootEncoder.GetPosition() <= 132)){
     m_climbArmPidController.SetReference(m_climbArmRotations, rev::ControlType::kPosition);
 
@@ -167,31 +168,69 @@ if(failSafe >= 100){
 }
 
 
+// //Level 1 Climb
+//   if ((m_stick.GetRawButton(9)) && (m_stick.GetRawButton(10))){
+//     timerArm++;
+//   }
+//   if ((m_stick.GetRawButton(9)) && (m_stick.GetRawButton(10)) && (timerArm >= 85)){
+//     m_climbArmPidController.SetReference(m_climbArmRotationsLowLevel, rev::ControlType::kPosition);
+    
+//     if ((m_climbArmEncoder.GetPosition() >= 80) && (timerArmDrive <= 85)) {
+//       timerArmDrive++;
+//       m_gearbox_right.Set(frc::DoubleSolenoid::Value::kReverse);
+// 	    m_gearbox_left.Set(frc::DoubleSolenoid::Value::kReverse);
+//       m_robotDrive.ArcadeDrive(m_RobotDriveVelocity, 0);
+//     }
+    
+//     if (timerArmDrive >= 60){
+//     m_climbArmPidController.SetReference(0, rev::ControlType::kPosition);
+//     }
+//   }
   // Arm/Wrist Positioning
   if (m_stick.GetRawButton(1)) {
     m_armPidController.SetReference(m_armRotations[0], rev::ControlType::kPosition);
     m_wristPidController.SetReference(m_wristRotations[0], rev::ControlType::kPosition);
-    LOGGER(INFO) << "Level 0 " << m_wristRotations[0];
+    //LOGGER(INFO) << "Level 0 " << m_wristRotations[0];
   } else if (m_stick.GetRawButton(2)) {
     m_armPidController.SetReference(m_armRotations[1], rev::ControlType::kPosition);
     m_wristPidController.SetReference(m_wristRotations[1], rev::ControlType::kPosition);
-    LOGGER(INFO) << "Level 1 " << m_wristRotations[1];
+    //LOGGER(INFO) << "Level 1 " << m_wristRotations[1];
   } else if (m_stick.GetRawButton(3)) {
     m_armPidController.SetReference(m_armRotations[2], rev::ControlType::kPosition);
     m_wristPidController.SetReference(m_wristRotations[2], rev::ControlType::kPosition);
-    LOGGER(INFO) << "Level 2 " << m_wristRotations[2];
+    //LOGGER(INFO) << "Level 2 " << m_wristRotations[2];
   } else if (m_stick.GetRawButton(4)) {
     m_armPidController.SetReference(m_armRotations[3], rev::ControlType::kPosition);
     m_wristPidController.SetReference(m_wristRotations[3], rev::ControlType::kPosition);
-    LOGGER(INFO) << "Level 3 " << m_wristRotations[3];
+    //LOGGER(INFO) << "Level 3 " << m_wristRotations[3];
   }
 
-  LOGGER(INFO) << "  Arm Encoder: " << m_armEncoder.GetPosition();
+  // if (m_stick.GetPOV(0) == 1){
+  //   m_climbWristRotationlvl1 = (m_climbWristRotationlvl1 + .5);
+  // }
+  // if (m_stick.GetPOV(180) == 1){
+  //   m_climbWristRotationlvl1 = (m_climbWristRotationlvl1 - .5);
+  // }
+  // LOGGER(INFO) << m_climbWristRotationlvl1 << "real one " << m_wristRotations[3];
+
+  /*LOGGER(INFO) << "  Arm Encoder: " << m_armEncoder.GetPosition();
   LOGGER(INFO) << "Wrist Encoder: " << m_wristEncoder.GetPosition();
   LOGGER(INFO) << "  C/A Encoder: " << m_climbArmEncoder.GetPosition();
-  LOGGER(INFO) << "  C/F Encoder: " << m_climbFootEncoder.GetPosition();
+  LOGGER(INFO) << "  C/F Encoder: " << m_climbFootEncoder.GetPosition();*/
+  if (m_stick.GetPOV(0) == 180){
+    timerFootBall++;
+  }
+  if (timerFootBall >=50){
+    LOGGER(INFO) << "You can know control the foot";
+  }
+  if ((m_stick.GetPOV(0) == 180) && (timerFootBall >= 50)){
+    m_climbFootPidController.SetReference(17, rev::ControlType::kPosition);
+  }
+  if ((m_stick.GetPOV(0) == 0) && (timerFootBall >= 50)){
+    m_climbFootPidController.SetReference(0, rev::ControlType::kPosition);
+  }
 }
-
+                                       
 
 void Robot::TestPeriodic() {}
 bool Robot::DoLimelightTracking()
@@ -218,7 +257,7 @@ bool Robot::DoLimelightTracking()
     m_limelightDriveCmd = -DRIVE_K;
     m_limelightTurnCmd  = txFront*STEER_K;
     m_limelightTurnCmd  = clamp(m_limelightTurnCmd, -MAX_STEER, MAX_STEER);
-    LOGGER(INFO) << "Target at Front";
+    //LOGGER(INFO) << "Target at Front";
     return true;
 
   } else if ((tvFront < 1.0) && (tvRear > 0.0)) {
@@ -226,7 +265,7 @@ bool Robot::DoLimelightTracking()
     m_limelightDriveCmd = DRIVE_K;
     m_limelightTurnCmd  = txRear*STEER_K;
     m_limelightTurnCmd  = clamp(m_limelightTurnCmd, -MAX_STEER, MAX_STEER);
-    LOGGER(INFO) << "Target at Rear";
+    //LOGGER(INFO) << "Target at Rear";
     return true;
 
   } else if ((tvFront > 0.0) && (tvRear > 0.0)) {
@@ -235,17 +274,17 @@ bool Robot::DoLimelightTracking()
       m_limelightDriveCmd = -DRIVE_K;
       m_limelightTurnCmd  = txFront*STEER_K;
       m_limelightTurnCmd  = clamp(m_limelightTurnCmd, -MAX_STEER, MAX_STEER);
-      LOGGER(INFO) << "Target at Front is larger";
+      //LOGGER(INFO) << "Target at Front is larger";
     } else {
       m_limelightDriveCmd = DRIVE_K;
       m_limelightTurnCmd  = txRear*STEER_K;
       m_limelightTurnCmd  = clamp(m_limelightTurnCmd, -MAX_STEER, MAX_STEER);
-      LOGGER(INFO) << "Target at Rear is larger";
+      //LOGGER(INFO) << "Target at Rear is larger";
     }
     return true;
   } 
 
-  LOGGER(INFO) << "No Targets";
+  //LOGGER(INFO) << "No Targets";
   return false;
 }
 
@@ -394,6 +433,7 @@ void Robot::ReadDashboard () {
   m_armRotations[3]    = frc::SmartDashboard::GetNumber("Arm Rotations Level 3", 0);
   m_wristRotations[0]  = frc::SmartDashboard::GetNumber("Wrist Rotations Level 0", 0);
   m_wristRotations[1]  = frc::SmartDashboard::GetNumber("Wrist Rotations Level 1", 0);
+  // m_wristRotations[1]  = m_climbWristRotationlvl1;
   m_wristRotations[2]  = frc::SmartDashboard::GetNumber("Wrist Rotations Level 2", 0);
   m_wristRotations[3]  = frc::SmartDashboard::GetNumber("Wrist Rotations Level 3", 0);
 
