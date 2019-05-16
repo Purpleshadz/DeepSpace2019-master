@@ -17,6 +17,8 @@
 #include "rev/CANSparkMax.h"
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
+#include <frc/WPILib.h>
+
 
 class Robot : public frc::TimedRobot {
  public:
@@ -44,6 +46,7 @@ class Robot : public frc::TimedRobot {
 
   // Targeting state
   bool m_IsTargeting = false;
+  bool m_IsStopped = false;
 
   // Throttle values for target-tracking mode based on camera target offset
   double m_limelightTurnCmd = 0.0;
@@ -103,24 +106,28 @@ class Robot : public frc::TimedRobot {
   };
 
   // DETERMINE THESE EXPERIMENTALLY!!!!!!!
-  pidCoeff       m_armCoeff {0.02, 0.0, 0.7, 0.0, 0.0, -1.0, 1.0};
+  pidCoeff       m_armCoeff {0.3, 0.0, 0.7, 0.0, 0.0, -0.35, 0.45};
   pidCoeff     m_wristCoeff {0.13, 0.0, 0.0, 0.0, 0.0, -1.0, 1.0};
   pidCoeff m_climbFootCoeff {0.1, 0.0, 1.0, 0.0, 0.0, -1.0, 1.0};
   pidCoeff  m_climbArmCoeff {0.05, 0.0, 0.0, 0.0, 0.0, -1.0, 1.0};
 
+
+  
   // Set Points for arm/wrist positions
-  double m_armRotations[4]    {0.0, 17.5, 46.5, 94.5};
-  double m_wristRotations[4]  {0.0, 32.5, 48.0, 14.0};
+  double m_armRotations[4]    {0.0, 17.5, 46.0, 96.0};
+  double m_wristRotations[4]  {0.0, 33.0, 49.5, 18.0};
   //double m_climbFootRotations = 0.0;
   double m_climbFootRotations = 132.0;
   //double m_climbArmRotations  = 0.0;
   double m_climbArmRotations  = 74.0;
 
-  double m_climbWristRotationlvl1 = 31.0;
+  double m_climbWristRotationlvl1 = 33.5;
+
+  bool m_POVClick = false;
 
   double m_climbArmRotationsLowLevel  = 85.0;
   // Drive to get Robot on level
-  double m_RobotDriveVelocity = .5;
+  double m_RobotDriveVelocity = .125;
   // Timer
   int timer = 0;
   int timerArm = 0;
@@ -130,6 +137,12 @@ class Robot : public frc::TimedRobot {
   // Toggle for climb
   int climbToggle = 0;
 
+
+  frc::DigitalInput switch0{0};
+  frc::DigitalInput switch1{1};
+  frc::DigitalInput switch2{2};
+  frc::DigitalInput switch3{3};
+  
   // // Cameras
   // cs::UsbCamera Cam1;
   // cs::UsbCamera Cam2;

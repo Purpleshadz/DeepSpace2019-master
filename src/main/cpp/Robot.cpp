@@ -77,9 +77,8 @@ void Robot::TeleopPeriodic() {
 void Robot::OperatorControl()
 {
   // Drive input from joystick
-  double move   = m_stick.GetRawAxis(1);
+  double move   = .5*m_stick.GetRawAxis(1);
   double rotate = 0.75*m_stick.GetRawAxis(4);
-
   // Targeting or Driving?
   if (m_stick.GetRawAxis(3) > 0.75) {
     // Targeting
@@ -90,19 +89,31 @@ void Robot::OperatorControl()
     DoLimelightTracking();
     move   = m_limelightDriveCmd;
     rotate = m_limelightTurnCmd;
+  // if grabber is closed
+    if (m_grabber.Get() == frc::DoubleSolenoid::Value::kReverse) {
+      if ((switch1.Get() == 0) || (switch0.Get() == 0) || (switch2.Get() == 0) || (switch3.Get() == 0)){
+        m_grabber.Set(frc::DoubleSolenoid::Value::kForward);
+        m_IsStopped = true;
+        LOGGER(INFO) << "Stopped";
+      }
+    }
+    if (m_IsStopped){
+      //zero motor input
+      move = 0.0;
+      rotate = 0.0;
+    }
   } else {
     // Driving
     if (m_IsTargeting) {
       // Stopped targeting, toggle grabber
       m_IsTargeting = false;
-
-      if (m_grabber.Get() == frc::DoubleSolenoid::Value::kForward) {
-		    m_grabber.Set(frc::DoubleSolenoid::Value::kReverse);
-      } else {
-		    m_grabber.Set(frc::DoubleSolenoid::Value::kForward);
+      if(!m_IsStopped == true){
+        if(m_grabber.Get() == frc::DoubleSolenoid::Value::kForward){
+          m_grabber.Set(frc::DoubleSolenoid::Value::kReverse);
+        }
       }
-    }
-
+    m_IsStopped = false;
+  }
     m_limelightFront->PutNumber("pipeline", 1);
     m_limelightRear->PutNumber("pipeline", 1);
 
@@ -115,17 +126,20 @@ void Robot::OperatorControl()
       rotate = 0.0;
     }
   }
-
+  // LOGGER(INFO) << switch0.Get() << " switch0";
+  // LOGGER(INFO) << switch1.Get() << " switch1";
+  // LOGGER(INFO) << switch2.Get() << " switch2";
+  // LOGGER(INFO) << switch3.Get() << " switch3";
   // Robot Drive
   m_robotDrive.ArcadeDrive(move, rotate);
 
   // Shifting
   if (m_stick.GetRawButton(5)) {
-  //  LOGGER(INFO) << "High Gear";
+    LOGGER(INFO) << "High Gear";
 		m_gearbox_right.Set(frc::DoubleSolenoid::Value::kForward);
     m_gearbox_left.Set(frc::DoubleSolenoid::Value::kForward);
   } else if (m_stick.GetRawButton(6)) {
-  //  LOGGER(INFO) << "Low Gear";
+    LOGGER(INFO) << "Low Gear";
 		m_gearbox_right.Set(frc::DoubleSolenoid::Value::kReverse);
 		m_gearbox_left.Set(frc::DoubleSolenoid::Value::kReverse);
 	}
@@ -205,23 +219,33 @@ if(failSafe >= 50){
     //LOGGER(INFO) << "Level 3 " << m_wristRotations[3];
   }
 
-  // if (m_stick.GetPOV(0) == 1){
-  //   m_climbWristRotationlvl1 = (m_climbWristRotationlvl1 + .5);
+  // if ((m_stick.GetPOV(0) == 90) || (m_stick.GetPOV(0) == 270) && (m_POVClick == false)){
+  //   m_POVClick = true;
   // }
-  // if (m_stick.GetPOV(180) == 1){
-  //   m_climbWristRotationlvl1 = (m_climbWristRotationlvl1 - .5);
-  // }
-  // LOGGER(INFO) << m_climbWristRotationlvl1 << "real one " << m_wristRotations[3];
+  if (m_stick.GetPOV(0) == -1){
+    m_POVClick = false;
+  }
 
+  if ((m_stick.GetPOV(0) == 90) && (m_POVClick == false)){
+    m_wristRotations[1] = m_wristRotations[1] + 1;
+    m_wristPidController.SetReference(m_wristRotations[1], rev::ControlType::kPosition);
+    m_POVClick = true;
+    LOGGER(INFO) << "Starting: " <<m_climbWristRotationlvl1 << " current: " << m_wristRotations[1];
+
+  }
+  if ((m_stick.GetPOV(0) == 270)  && (m_POVClick == false)){
+    m_wristRotations[1] = m_wristRotations[1] - 1;
+    m_wristPidController.SetReference(m_wristRotations[1], rev::ControlType::kPosition);
+    m_POVClick = true;
+    LOGGER(INFO) << "Starting: " <<m_climbWristRotationlvl1 << " current: " << m_wristRotations[1];
+
+  }
   /*LOGGER(INFO) << "  Arm Encoder: " << m_armEncoder.GetPosition();
   LOGGER(INFO) << "Wrist Encoder: " << m_wristEncoder.GetPosition();
   LOGGER(INFO) << "  C/A Encoder: " << m_climbArmEncoder.GetPosition();
   LOGGER(INFO) << "  C/F Encoder: " << m_climbFootEncoder.GetPosition();*/
   if (m_stick.GetPOV(0) == 180){
     timerFootBall++;
-  }
-  if (timerFootBall >=50){
-    LOGGER(INFO) << "You can know control the foot";
   }
   if ((m_stick.GetPOV(0) == 180) && (timerFootBall >= 50)){
     m_climbFootPidController.SetReference(17, rev::ControlType::kPosition);
